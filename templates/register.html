@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-md mx-auto">
+    <div class="text-center mb-8">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-yellow-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-user-plus text-2xl text-black"></i>
+        </div>
+        <h2 class="font-display text-3xl font-bold text-yellow-400 tracking-wide">Create Account</h2>
+        <p class="text-neutral-400 mt-2">Select your name from the roster</p>
+    </div>
+    
+    <form method="POST" class="space-y-5 bg-neutral-950 border border-yellow-800/40 rounded-2xl p-8">
+        <div>
+            <label class="block text-sm font-medium mb-2 text-neutral-300">Your Name</label>
+            <select name="name" required class="w-full bg-black border border-neutral-700 rounded-xl px-4 py-3 focus:border-yellow-500 focus:outline-none transition">
+                <option value="" disabled selected>Select your name...</option>
+                {% for name in available_names %}
+                <option value="{{ name }}">{{ name }}</option>
+                {% endfor %}
+            </select>
+            {% if not available_names %}
+            <p class="text-sm text-yellow-400 mt-2">All roster members have already registered.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-2 text-neutral-300">Email</label>
+            <input type="email" name="email" required class="w-full bg-black border border-neutral-700 rounded-xl px-4 py-3 focus:border-yellow-500 focus:outline-none transition">
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-2 text-neutral-300">Password (min 6 characters)</label>
+            <input type="password" name="password" required minlength="6" class="w-full bg-black border border-neutral-700 rounded-xl px-4 py-3 focus:border-yellow-500 focus:outline-none transition">
+        </div>
+        <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black py-3.5 rounded-xl font-bold transition" {% if not available_names %}disabled{% endif %}>
+            Create Account
+        </button>
+    </form>
+    <p class="text-center mt-6 text-neutral-400">Already have an account? <a href="/login" class="text-yellow-400 hover:text-yellow-300 font-medium">Log in</a></p>
+</div>
+{% endblock %}

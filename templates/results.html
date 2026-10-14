@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-10 text-center">
+    <h2 class="font-display text-4xl font-bold mb-2 text-yellow-400 tracking-wide">Results</h2>
+    <p class="text-neutral-400">Current vote tallies</p>
+</div>
+
+{% for item in results %}
+<div class="mb-10 bg-neutral-950 border border-yellow-800/30 rounded-2xl p-8">
+    <h3 class="font-display text-2xl font-bold mb-1 text-white tracking-wide">{{ item.category.name }}</h3>
+    <p class="text-neutral-400 text-sm mb-8">{{ item.category.description }}</p>
+    
+    <div class="space-y-4">
+        {% for entry in item.nominees %}
+        {% set max_votes = item.nominees[0].votes if item.nominees else 1 %}
+        {% set percent = (entry.votes / max_votes * 100) if max_votes > 0 else 0 %}
+        <div>
+            <div class="flex justify-between items-center text-sm mb-2">
+                <span class="font-medium">{{ entry.nominee.name }}</span>
+                <span class="text-yellow-400 font-semibold">{{ entry.votes }} votes</span>
+            </div>
+            <div class="w-full bg-neutral-800 rounded-full h-3 overflow-hidden">
+                <div class="bg-gradient-to-r from-yellow-500 to-yellow-300 h-3 rounded-full transition-all duration-500" style="width: {{ percent }}%"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+<div class="text-center mt-8">
+    <a href="/" class="inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 font-medium">
+        <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-10">
+    <h2 class="font-display text-4xl font-bold mb-2 text-yellow-400 tracking-wide">Cast Your Votes</h2>
+    <p class="text-neutral-400">Welcome, {{ user_name }}. Select a name, then click Submit for that category. Votes are final.</p>
+</div>
+
+{% for category in categories %}
+{% set restricted_role = none %}
+{% if category.name == "The Lead of the Year Award" %}{% set restricted_role = "lead" %}{% endif %}
+{% if category.name == "The Senior of the Year Award" %}{% set restricted_role = "senior" %}{% endif %}
+{% if category.name == "Part-Time Telecommunicator of the Year" %}{% set restricted_role = "part_time" %}{% endif %}
+{% set is_restricted = restricted_role and user_role == restricted_role %}
+
+<div class="mb-12 bg-neutral-950 border border-yellow-800/30 rounded-2xl p-8 {% if is_restricted %}opacity-50{% endif %}" data-category-id="{{ category.id }}" id="category-{{ category.id }}">
+    <h3 class="font-display text-2xl font-bold mb-2 text-white tracking-wide">{{ category.name }}</h3>
+    <p class="text-neutral-400 text-sm mb-8">{{ category.description }} <strong class="text-yellow-400">Only choose one person.</strong></p>
+    
+    {% if is_restricted %}
+        <div class="mb-6 p-4 bg-neutral-800 border border-neutral-600 rounded-xl text-neutral-400">
+            You are not eligible to vote in this category.
+        </div>
+    {% endif %}
+    
+    {% set voted_nominee = user_votes.get(category.id) %}
+    {% if voted_nominee and not is_restricted %}
+        <div class="mb-6 p-4 bg-yellow-950/30 border border-yellow-600/40 rounded-xl text-yellow-300 flex items-center gap-3">
+            <i class="fas fa-check-circle text-yellow-400"></i>
+            <span>You voted for <strong>{{ voted_nominee.name }}</strong></span>
+        </div>
+    {% endif %}
+
+    {# Alphabetical list of all nominees #}
+    {% set sorted_nominees = category.nominees | sort(attribute='name') %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {% for nominee in sorted_nominees %}
+        {% set is_self = nominee.name == user_name %}
+        <div class="nominee-card border border-neutral-700 rounded-xl p-4 text-left w-full 
+            {% if is_self or is_restricted %}opacity-40 cursor-not-allowed bg-neutral-800{% else %}bg-neutral-900 cursor-pointer{% endif %}
+            {% if voted_nominee and voted_nominee.id == nominee.id and not is_restricted %}selected-nominee{% endif %}"
+            data-nominee-id="{{ nominee.id }}"
+            {% if is_self or is_restricted %}data-disabled="true"{% endif %}>
+            <div class="font-semibold text-base {% if is_self or is_restricted %}text-neutral-500{% else %}text-white{% endif %}">
+                {{ nominee.name }}
+                {% if is_self %}<span class="text-xs ml-1">(You)</span>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not voted_nominee and not is_restricted %}
+    <form method="POST" action="/cast_vote" class="mt-8 flex justify-end">
+        <input type="hidden" name="category_id" value="{{ category.id }}">
+        <input type="hidden" name="nominee_id" id="selected-{{ category.id }}" value="">
+        <button type="submit" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-3 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed" disabled id="submit-{{ category.id }}">
+            Submit Vote
+        </button>
+    </form>
+    {% endif %}
+</div>
+{% endfor %}
+
+<script>
+document.querySelectorAll('[data-category-id]').forEach(container => {
+    const categoryId = container.dataset.categoryId;
+    const hiddenInput = document.getElementById('selected-' + categoryId);
+    const submitBtn = document.getElementById('submit-' + categoryId);
+    if (!hiddenInput || !submitBtn) return;
+
+    container.querySelectorAll('.nominee-card').forEach(card => {
+        if (card.dataset.disabled === "true") return;
+        card.addEventListener('click', () => {
+            container.querySelectorAll('.nominee-card').forEach(c => c.classList.remove('selected-nominee'));
+            card.classList.add('selected-nominee');
+            hiddenInput.value = card.dataset.nomineeId;
+            submitBtn.disabled = false;
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,5 @@
+<div class="nominee-card border border-neutral-700 bg-neutral-900 rounded-xl p-4 text-left w-full 
+    {% if voted_nominee and voted_nominee.id == nominee.id %}selected-nominee{% endif %}"
+    data-nominee-id="{{ nominee.id }}">
+    <div class="font-semibold text-base text-white">{{ nominee.name }}</div>
+</div>

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="relative text-center py-20">
+    <div class="inline-flex items-center gap-2 bg-yellow-950/40 border border-yellow-700/40 text-yellow-300 text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
+        Voting Open
+    </div>
+    
+    <h1 class="font-display text-5xl md:text-7xl font-bold mb-6 text-yellow-400 tracking-wide leading-tight">
+        {{ event_name }}
+    </h1>
+    
+    <p class="text-xl md:text-2xl text-neutral-300 mb-10 max-w-3xl mx-auto leading-relaxed">
+        {{ tagline }}
+    </p>
+    
+    {% if not current_user.is_authenticated %}
+        <a href="/register" class="inline-flex items-center gap-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 px-10 rounded-xl text-lg shadow-lg transition">
+            <i class="fas fa-headset"></i>
+            Sign Up & Vote
+        </a>
+    {% else %}
+        <a href="/vote" class="inline-flex items-center gap-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 px-10 rounded-xl text-lg shadow-lg transition">
+            <i class="fas fa-vote-yea"></i>
+            Cast Your Votes
+        </a>
+    {% endif %}
+</div>
+
+<div class="mt-8">
+    <h2 class="font-display text-2xl font-bold mb-8 text-center text-neutral-300 tracking-wide">Award Categories</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for category in categories %}
+        <div class="bg-neutral-950 border border-yellow-800/30 rounded-2xl p-6 hover:border-yellow-500/50 transition">
+            <div class="flex items-start justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                    <i class="fas fa-award text-yellow-400"></i>
+                </div>
+                <span class="text-xs text-yellow-500 font-medium">{{ category.nominees|length }} nominees</span>
+            </div>
+            <h3 class="text-xl font-bold mb-2 text-white">{{ category.name }}</h3>
+            <p class="text-neutral-400 text-sm leading-relaxed">{{ category.description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
