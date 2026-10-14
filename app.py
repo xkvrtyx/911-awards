@@ -6,7 +6,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'replace-this-with-a-long-random-string-of-letters-and-numbers')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///awards.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -86,154 +86,150 @@ RESTRICTED_CATEGORIES = {
 def init_db():
     with app.app_context():
         db.create_all()
-        # Always clear and reseed categories so description updates apply
-        Vote.query.delete()
-        Nominee.query.delete()
-        Category.query.delete()
-        db.session.commit()
+        # Only seed categories if none exist yet (keeps votes and accounts permanent)
+        if Category.query.count() == 0:
+            # Shared nominee lists
+            all_dispatchers = [
+                {"name": "Abby Holliman", "description": "Abby's Shift"},
+                {"name": "Alex Skasick", "description": "Abby's Shift"},
+                {"name": "Hannah Hensley", "description": "Abby's Shift"},
+                {"name": "Karrissa Hood", "description": "Abby's Shift"},
+                {"name": "Taylor Williams", "description": "Abby's Shift"},
+                {"name": "Jennifer Smith", "description": "Kady's Shift"},
+                {"name": "Kady Elgen", "description": "Kady's Shift"},
+                {"name": "Keri Atkinson", "description": "Kady's Shift"},
+                {"name": "Madison Gray", "description": "Kady's Shift"},
+            ]
+            
+            senior_nominees = [
+                {"name": "Alex Skasick", "description": "Abby's Shift"},
+                {"name": "Jennifer Smith", "description": "Kady's Shift"},
+                {"name": "Karrissa Hood", "description": "Abby's Shift"},
+            ]
+            
+            lead_nominees = [
+                {"name": "Abby Holliman", "description": "Abby's Shift"},
+                {"name": "Kady Elgen", "description": "Kady's Shift"},
+            ]
 
-        # Shared nominee lists
-        all_dispatchers = [
-            {"name": "Abby Holliman", "description": "Abby's Shift"},
-            {"name": "Alex Skasick", "description": "Abby's Shift"},
-            {"name": "Hannah Hensley", "description": "Abby's Shift"},
-            {"name": "Karrissa Hood", "description": "Abby's Shift"},
-            {"name": "Taylor Williams", "description": "Abby's Shift"},
-            {"name": "Jennifer Smith", "description": "Kady's Shift"},
-            {"name": "Kady Elgen", "description": "Kady's Shift"},
-            {"name": "Keri Atkinson", "description": "Kady's Shift"},
-            {"name": "Madison Gray", "description": "Kady's Shift"},
-        ]
-        
-        senior_nominees = [
-            {"name": "Alex Skasick", "description": "Abby's Shift"},
-            {"name": "Jennifer Smith", "description": "Kady's Shift"},
-            {"name": "Karrissa Hood", "description": "Abby's Shift"},
-        ]
-        
-        lead_nominees = [
-            {"name": "Abby Holliman", "description": "Abby's Shift"},
-            {"name": "Kady Elgen", "description": "Kady's Shift"},
-        ]
-
-        categories_data = [
-            {
-                "name": "The Human Google Award",
-                "description": "Recognizes a telecommunicator who demonstrates exceptional knowledge of geography, procedures, resources, and local information, enabling quick and accurate responses.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Reliability Award",
-                "description": "Recognizes a telecommunicator who consistently demonstrates dependability through strong attendance, willingness to cover shifts, and reliable performance.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Plot Twist Professional Award",
-                "description": "Recognizes a telecommunicator who adapts quickly and effectively when a routine call or incident unexpectedly escalates into a complex or high-priority emergency.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Calmest Voice in the Chaos Award",
-                "description": "Recognizes a telecommunicator who maintains a steady, professional demeanor and clear communication during high-stress or rapidly evolving incidents.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Headset Hero Award",
-                "description": "Recognizes a telecommunicator who consistently performs at a high level while managing multiple simultaneous tasks, including calls, radio traffic, and system updates.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Above & Beyond Award",
-                "description": "Recognizes a telecommunicator whose actions or initiative significantly exceeded standard expectations in support of the public, field units, or coworkers.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Keyboard Warrior Award",
-                "description": "Recognizes a telecommunicator who maintains high accuracy and speed while documenting calls and updating systems in real time.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Comic Relief Award",
-                "description": "Recognizes a telecommunicator who positively contributes to the work environment by providing appropriate humor while still meeting performance standards.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Overtime Legend Award",
-                "description": "Recognizes a telecommunicator who demonstrates exceptional reliability by covering additional shifts and supporting staffing needs.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Peer Support Pro Award",
-                "description": "Recognizes a telecommunicator who offers practical assistance and encouragement to coworkers while maintaining their own performance standards.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The “Seen It, Handled It” Award",
-                "description": "Recognizes a telecommunicator who applies experience and sound judgment to effectively manage unusual or challenging calls.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Needs Autocorrect Award",
-                "description": "Recognizes a telecommunicator known for frequent spelling errors in CAD entries or for regularly asking how to spell words before typing.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Unbothered Legend Award",
-                "description": "Recognizes a telecommunicator who remains composed and effective regardless of call volume, radio traffic, staffing levels, or unexpected situations.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Certified Napper Award",
-                "description": "Recognizes a telecommunicator who maximizes rest opportunities during lower-activity periods while remaining available for operational needs.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The \"What?\" Award",
-                "description": "Recognizes a telecommunicator who frequently requests repetition or clarification, even in quiet conditions.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Caffeine Addict Award",
-                "description": "Recognizes a telecommunicator who relies heavily on caffeine to maintain alertness and performance throughout their shift.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Morning Escape Artist Award",
-                "description": "Recognizes a telecommunicator who efficiently completes end-of-shift duties and departs promptly at the conclusion of their tour.",
-                "nominees": all_dispatchers
-            },
-            {
-                "name": "The Senior of the Year Award",
-                "description": "Recognizes a senior telecommunicator who consistently demonstrates advanced skill, sound judgment, and leadership by supporting less-experienced staff while maintaining high performance standards.",
-                "nominees": senior_nominees
-            },
-            {
-                "name": "Part-Time Telecommunicator of the Year",
-                "description": "Recognizes a part-time telecommunicator who consistently demonstrates strong performance, reliability, and professionalism while supporting center operations.",
-                "nominees": [
-                    {"name": "Corrie Eads", "description": "Part-Time"},
-                    {"name": "Emma Thompson", "description": "Part-Time"}
-                ]
-            },
-            {
-                "name": "The Lead of the Year Award",
-                "description": "Recognizes a lead dispatcher or acting supervisor who effectively guides shift operations, assists with decision-making, and supports both staff and center objectives.",
-                "nominees": lead_nominees
-            },
-            {
-                "name": "Dispatcher of the Year Award",
-                "description": "Recognizes a telecommunicator who consistently delivers exceptional performance, professionalism, and composure while handling emergency and non-emergency calls.",
-                "nominees": all_dispatchers
-            }
-        ]
-        for cat_data in categories_data:
-            cat = Category(name=cat_data["name"], description=cat_data["description"])
-            db.session.add(cat)
-            db.session.flush()
-            for nom_data in cat_data["nominees"]:
-                nom = Nominee(name=nom_data["name"], description=nom_data["description"], category_id=cat.id)
-                db.session.add(nom)
-        db.session.commit()
+            categories_data = [
+                {
+                    "name": "The Human Google Award",
+                    "description": "Recognizes a telecommunicator who demonstrates exceptional knowledge of geography, procedures, resources, and local information, enabling quick and accurate responses.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Reliability Award",
+                    "description": "Recognizes a telecommunicator who consistently demonstrates dependability through strong attendance, willingness to cover shifts, and reliable performance.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Plot Twist Professional Award",
+                    "description": "Recognizes a telecommunicator who adapts quickly and effectively when a routine call or incident unexpectedly escalates into a complex or high-priority emergency.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Calmest Voice in the Chaos Award",
+                    "description": "Recognizes a telecommunicator who maintains a steady, professional demeanor and clear communication during high-stress or rapidly evolving incidents.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Headset Hero Award",
+                    "description": "Recognizes a telecommunicator who consistently performs at a high level while managing multiple simultaneous tasks, including calls, radio traffic, and system updates.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Above & Beyond Award",
+                    "description": "Recognizes a telecommunicator whose actions or initiative significantly exceeded standard expectations in support of the public, field units, or coworkers.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Keyboard Warrior Award",
+                    "description": "Recognizes a telecommunicator who maintains high accuracy and speed while documenting calls and updating systems in real time.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Comic Relief Award",
+                    "description": "Recognizes a telecommunicator who positively contributes to the work environment by providing appropriate humor while still meeting performance standards.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Overtime Legend Award",
+                    "description": "Recognizes a telecommunicator who demonstrates exceptional reliability by covering additional shifts and supporting staffing needs.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Peer Support Pro Award",
+                    "description": "Recognizes a telecommunicator who offers practical assistance and encouragement to coworkers while maintaining their own performance standards.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The “Seen It, Handled It” Award",
+                    "description": "Recognizes a telecommunicator who applies experience and sound judgment to effectively manage unusual or challenging calls.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Needs Autocorrect Award",
+                    "description": "Recognizes a telecommunicator known for frequent spelling errors in CAD entries or for regularly asking how to spell words before typing.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Unbothered Legend Award",
+                    "description": "Recognizes a telecommunicator who remains composed and effective regardless of call volume, radio traffic, staffing levels, or unexpected situations.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Certified Napper Award",
+                    "description": "Recognizes a telecommunicator who maximizes rest opportunities during lower-activity periods while remaining available for operational needs.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The \"What?\" Award",
+                    "description": "Recognizes a telecommunicator who frequently requests repetition or clarification, even in quiet conditions.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Caffeine Addict Award",
+                    "description": "Recognizes a telecommunicator who relies heavily on caffeine to maintain alertness and performance throughout their shift.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Morning Escape Artist Award",
+                    "description": "Recognizes a telecommunicator who efficiently completes end-of-shift duties and departs promptly at the conclusion of their tour.",
+                    "nominees": all_dispatchers
+                },
+                {
+                    "name": "The Senior of the Year Award",
+                    "description": "Recognizes a senior telecommunicator who consistently demonstrates advanced skill, sound judgment, and leadership by supporting less-experienced staff while maintaining high performance standards.",
+                    "nominees": senior_nominees
+                },
+                {
+                    "name": "Part-Time Telecommunicator of the Year",
+                    "description": "Recognizes a part-time telecommunicator who consistently demonstrates strong performance, reliability, and professionalism while supporting center operations.",
+                    "nominees": [
+                        {"name": "Corrie Eads", "description": "Part-Time"},
+                        {"name": "Emma Thompson", "description": "Part-Time"}
+                    ]
+                },
+                {
+                    "name": "The Lead of the Year Award",
+                    "description": "Recognizes a lead dispatcher or acting supervisor who effectively guides shift operations, assists with decision-making, and supports both staff and center objectives.",
+                    "nominees": lead_nominees
+                },
+                {
+                    "name": "Dispatcher of the Year Award",
+                    "description": "Recognizes a telecommunicator who consistently delivers exceptional performance, professionalism, and composure while handling emergency and non-emergency calls.",
+                    "nominees": all_dispatchers
+                }
+            ]
+            for cat_data in categories_data:
+                cat = Category(name=cat_data["name"], description=cat_data["description"])
+                db.session.add(cat)
+                db.session.flush()
+                for nom_data in cat_data["nominees"]:
+                    nom = Nominee(name=nom_data["name"], description=nom_data["description"], category_id=cat.id)
+                    db.session.add(nom)
+            db.session.commit()
 
 init_db()
 
